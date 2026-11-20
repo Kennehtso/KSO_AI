@@ -221,3 +221,55 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# =====================================================================
+# KSO_AI additions (on top of GitHub's Python template above)
+# =====================================================================
+
+# --- Secrets: never commit API keys -----------------------------------
+# (.env is already ignored above; this also catches .env.local etc.)
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# --- Large AI files: download them with a script instead --------------
+# Anchored to the repo root so code folders named "models/" (Django,
+# Pydantic) are NOT ignored.
+/models/
+*.gguf
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# --- Data, vector stores, run outputs ---------------------------------
+data/raw/
+data/cache/
+chroma/
+*.faiss
+*.lance
+mlruns/
+wandb/
+logs/
+outputs/
+
+# --- Claude Code: commit CLAUDE.md and .claude/settings.json, ----------
+# --- but keep your personal local settings out of git -----------------
+.claude/settings.local.json
+
+# --- Node / front-end -------------------------------------------------
+node_modules/
+
+# --- .NET / Visual Studio ---------------------------------------------
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+
+# --- Editor / OS ------------------------------------------------------
+.idea/
+.DS_Store
+Thumbs.db
