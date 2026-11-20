@@ -1,0 +1,351 @@
+<title>KSO_AI Roadmap Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a release-log timeline — one column of phases, each tagged with the copilot version it ships. */
+:root {
+  --bg: #f5f7f8;
+  --surface: #ffffff;
+  --fg: #15212b;
+  --muted: #5b6b78;
+  --line: #dbe2e7;
+  --accent: #0d7a72;
+  --accent-soft: #e0f1ef;
+  --now: #b25e09;
+  --now-soft: #fbeedd;
+  --done: #2f7d32;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1418; --surface: #151d23; --fg: #e3eaee; --muted: #93a3ae; --line: #26323b;
+    --accent: #3cc2b6; --accent-soft: #123330; --now: #f0a24b; --now-soft: #3a2812; --done: #6cc070;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1418; --surface: #151d23; --fg: #e3eaee; --muted: #93a3ae; --line: #26323b;
+  --accent: #3cc2b6; --accent-soft: #123330; --now: #f0a24b; --now-soft: #3a2812; --done: #6cc070;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+header { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(28px, 6vw, 40px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lede { margin: 0; color: var(--muted); max-width: 62ch; }
+
+.summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; min-width: 0; }
+.stat .k { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.stat .v { font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stat .v.mono { font-family: var(--font-mono); font-size: 18px; font-weight: 500; }
+@media (max-width: 520px) { .summary { grid-template-columns: 1fr 1fr; } .stat:last-child { grid-column: 1 / -1; } }
+
+.meter { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.meter > i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .3s ease; }
+.status { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.status[data-mode="account"] .dot { background: var(--done); }
+.status[data-mode="local"] .dot { background: var(--now); }
+
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.phase { position: relative; padding-left: 44px; }
+.phase::before { content: ""; position: absolute; left: 15px; top: 34px; bottom: -14px; width: 2px; background: var(--line); }
+.phase:last-child::before { display: none; }
+.num {
+  position: absolute; left: 0; top: 6px; width: 32px; height: 32px; border-radius: 50%;
+  display: grid; place-items: center; font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  background: var(--surface); border: 2px solid var(--line); color: var(--muted);
+}
+.phase[data-state="done"] .num { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.phase[data-state="now"] .num { border-color: var(--now); color: var(--now); }
+
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.phase[data-state="now"] details { border-color: var(--now); }
+summary { list-style: none; cursor: pointer; padding: 12px 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+summary::-webkit-details-marker { display: none; }
+.ptitle { font-family: var(--font-display); font-weight: 600; font-size: 17px; flex: 1 1 260px; min-width: 0; text-wrap: balance; }
+.meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.chip { font-family: var(--font-mono); font-size: 12px; padding: 1px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.phase[data-state="now"] .chip.state { background: var(--now-soft); color: var(--now); }
+.count { font-variant-numeric: tabular-nums; }
+.pmeter { flex-basis: 100%; height: 4px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.pmeter > i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s ease; }
+
+.body { padding: 2px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+.tasks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.tasks label { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; padding: 6px 4px; border-radius: 6px; cursor: pointer; }
+.tasks label:hover { background: var(--bg); }
+.tasks input { width: 17px; height: 17px; margin: 3px 0 0; accent-color: var(--accent); cursor: pointer; }
+.tasks .t { min-width: 0; overflow-wrap: anywhere; }
+.tasks input:checked + .t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+code { font-family: var(--font-mono); font-size: 13px; background: var(--bg); padding: 0 4px; border-radius: 4px; }
+.link { font-size: 13px; }
+
+footer { font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+@media (prefers-reduced-motion: reduce) { .meter > i, .pmeter > i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">KSO_AI · 26 weeks · 11 phases</div>
+    <h1>KSO_AI Roadmap Tracker</h1>
+    <p class="lede">Tick items off as you go. Each phase adds a new version of the <strong>KSO Support Copilot</strong>. The full lessons are in <a href="https://github.com/Kennehtso/KSO_AI/blob/main/ROADMAP.md" target="_blank" rel="noopener">ROADMAP.md</a>.</p>
+    <div class="summary">
+      <div class="stat"><div class="k">Progress</div><div class="v" id="s-pct">0%</div></div>
+      <div class="stat"><div class="k">Items done</div><div class="v" id="s-count">0 / 0</div></div>
+      <div class="stat"><div class="k">Current phase</div><div class="v mono" id="s-now">Phase 0</div></div>
+    </div>
+    <div class="meter" aria-hidden="true"><i id="s-bar"></i></div>
+    <div class="status" id="status" data-mode="pending"><span class="dot"></span><span id="status-text">Saved in this browser. Checking for your account…</span></div>
+  </header>
+
+  <ol class="timeline" id="timeline"></ol>
+
+  <footer>
+    <span>Your ticks are your own. People you share this page with get their own empty checklist.</span>
+    <span>Lessons: CC BY 4.0 · Code: MIT</span>
+  </footer>
+</div>
+
+<script>
+const ROADMAP = "https://github.com/Kennehtso/KSO_AI/blob/main/ROADMAP.md";
+const PHASES = [
+  { n: 0, title: "Setup and ground rules", weeks: "Week 1", ver: "setup", anchor: "phase-0--setup-and-ground-rules-week-1", tasks: [
+    ["p0-install", "Do", "Install Python 3.11+, Git, VS Code and Ollama"],
+    ["p0-models", "Do", "Pull one small chat model and one embedding model in Ollama"],
+    ["p0-keys", "Do", "Create free keys (Gemini in AI Studio, GitHub Models token, OpenRouter) and put them in <code>.env</code>"],
+    ["p0-claude", "Learn", "Claude Code basics: open the repo, read <code>CLAUDE.md</code>, ask it to explain the repo"],
+    ["p0-rules", "Write", "<code>notes/ai-usage-rules.md</code>: company AI policy + your rules for work data"],
+    ["p0-check", "Done when", "<code>00-setup-check</code> shows Ollama + 2 hosted providers answering"],
+  ]},
+  { n: 1, title: "How LLMs work + the model landscape", weeks: "Weeks 2–3", ver: "matrix v1", anchor: "phase-1--how-llms-work--the-model-landscape-weeks-23", tasks: [
+    ["p1-watch", "Learn", "Watch 3Blue1Brown's <em>But what is a GPT?</em> and Karpathy's <em>Intro to LLMs</em>"],
+    ["p1-exp1", "Experiment", "<code>01-tokens-and-temperature</code>"],
+    ["p1-exp2", "Experiment", "<code>02-context-limits</code>"],
+    ["p1-tasks", "Do", "Write 10 sanitized tasks based on your real support work"],
+    ["p1-run", "Compare", "Run all 10 in ChatGPT, Gemini, DeepSeek and Claude; score each 1–5"],
+    ["p1-matrix", "Write", "<code>notes/model-comparison.md</code> v1, filled in from evidence"],
+    ["p1-done", "Done when", "You can explain tokens, context windows and temperature without notes"],
+  ]},
+  { n: 2, title: "Calling models from code", weeks: "Weeks 4–5", ver: "v0.1", anchor: "phase-2--calling-models-from-code-weeks-45", tasks: [
+    ["p2-learn", "Learn", "Chat API format, streaming, retries, rate limits, token cost"],
+    ["p2-adapters", "Experiment", "<code>03-provider-adapters</code>: ollama, gemini, openai_compatible"],
+    ["p2-claude", "Optional", "<code>claude_code</code> adapter using <code>claude -p</code> on your Pro plan"],
+    ["p2-ship", "Ship", "<code>explain-error</code> CLI with a SQLite usage log"],
+    ["p2-review", "Do", "Review the AI-written code and note every mistake it made"],
+    ["p2-compare", "Compare", "5 stack traces on 3+ providers: correctness and speed"],
+    ["p2-tag", "Done when", "Tag <code>copilot-v0.1</code>"],
+  ]},
+  { n: 3, title: "Prompt engineering & structured output", weeks: "Weeks 6–7", ver: "v0.2", anchor: "phase-3--prompt-engineering--structured-output-weeks-67", tasks: [
+    ["p3-learn", "Learn", "Few-shot, XML tags, structured output, prompt injection basics"],
+    ["p3-data", "Experiment", "<code>04-sample-data</code>: synthetic logs, stack traces, HAR, TeamSite-style errors"],
+    ["p3-iter", "Experiment", "<code>05-prompt-iterations</code>: one prompt in 5 versions"],
+    ["p3-schema", "Ship", "<code>Diagnosis</code> schema with Pydantic validation + retry"],
+    ["p3-filter", "Ship", "Log pre-filter so small local models can handle long logs"],
+    ["p3-done", "Done when", "<code>analyze-log</code> is valid on 10 logs with correct evidence lines; tag v0.2"],
+  ]},
+  { n: 4, title: "Evaluation: proving it works", weeks: "Weeks 8–9", ver: "v0.3", anchor: "phase-4--evaluation-proving-it-works-weeks-89", tasks: [
+    ["p4-learn", "Learn", "Golden datasets, rubric scoring, LLM-as-judge and its biases"],
+    ["p4-cases", "Do", "Write 30+ eval cases with known root causes"],
+    ["p4-runner", "Ship", "Comparison Lab: <code>copilot eval</code> runner + Markdown/HTML report"],
+    ["p4-promptfoo", "Experiment", "<code>06-promptfoo</code>, compared with your own runner"],
+    ["p4-done", "Done when", "Report compares 4+ providers; update <code>model-comparison.md</code>; tag v0.3"],
+  ]},
+  { n: 5, title: "RAG: answering from your docs", weeks: "Weeks 10–12", ver: "v0.4", anchor: "phase-5--rag-answering-from-your-docs-weeks-1012", tasks: [
+    ["p5-learn", "Learn", "Embeddings, chunking, BM25 vs semantic vs hybrid search, reranking"],
+    ["p5-exp", "Experiment", "<code>07-embeddings</code> and <code>08-chunking</code>"],
+    ["p5-ingest", "Ship", "Index public docs + KB articles you wrote, with local embeddings"],
+    ["p5-ask", "Ship", "<code>copilot ask</code> with citations and \"not in the KB\""],
+    ["p5-private", "Ship", "<code>--kb-path</code> for private work docs (never committed)"],
+    ["p5-done", "Done when", "recall@5 ≥ 0.8 on 20 question/answer pairs; tag v0.4"],
+  ]},
+  { n: 6, title: "Tools, agents, and MCP", weeks: "Weeks 13–15", ver: "v0.5", anchor: "phase-6--tools-agents-and-mcp-weeks-1315", tasks: [
+    ["p6-learn", "Learn", "Tool calling, the agent loop, guardrails, MCP"],
+    ["p6-exp", "Experiment", "<code>09-tool-calling</code> and <code>10-browser-check</code> (Playwright)"],
+    ["p6-tools", "Ship", "Tools: search_logs, http_check, browser_check, parse_har, kb_search…"],
+    ["p6-investigate", "Ship", "<code>copilot investigate</code> with an evidence trail"],
+    ["p6-mcp", "Ship", "MCP server that Claude Code can call"],
+    ["p6-done", "Done when", "5 synthetic tickets solved end to end; tag v0.5"],
+  ]},
+  { n: 7, title: "AI-assisted coding mastery", weeks: "Weeks 16–17", ver: "v0.6", anchor: "phase-7--ai-assisted-coding-mastery-weeks-1617-and-all-along", tasks: [
+    ["p7-learn", "Learn", "Plan → small steps → tests → review every diff; commands, hooks, subagents"],
+    ["p7-app", "Experiment", "<code>11-legacy-webapp</code>: a synthetic JSP/Java app with typical problems"],
+    ["p7-tasks", "Do", "All 7 practice tasks: explain, bug from symptom, JUnit, javax→jakarta, Java 17, XSS, script"],
+    ["p7-review", "Ship", "<code>copilot review</code> for JSP/Java/JS"],
+    ["p7-playbook", "Ship", "4+ team commands in <code>.claude/commands/</code> + <code>notes/playbooks/</code>"],
+    ["p7-done", "Done when", "Timed the tasks with and without AI; tag v0.6"],
+  ]},
+  { n: 8, title: "Support workflows & the web app", weeks: "Weeks 18–20", ver: "v0.8", anchor: "phase-8--support-workflows--the-web-app-weeks-1820", tasks: [
+    ["p8-learn", "Learn", "Classification, human-in-the-loop, vision, UI patterns for AI"],
+    ["p8-exp", "Experiment", "<code>12-triage-prompt</code> and <code>13-screenshot-diagnosis</code>"],
+    ["p8-triage", "Ship", "Ticket triage: category, priority, missing info, owner"],
+    ["p8-reply", "Ship", "Draft reply in your team's tone, never sent automatically"],
+    ["p8-ui", "Ship", "Web UI: ticket workspace, Comparison Lab, history & feedback"],
+    ["p8-done", "Done when", "A ticket goes end to end in the browser; 👎 saves eval cases; tag v0.8"],
+  ]},
+  { n: 9, title: "ML fundamentals", weeks: "Weeks 21–23", ver: "v0.9", anchor: "phase-9--ml-fundamentals-weeks-2123", tasks: [
+    ["p9-karpathy", "Learn", "Karpathy's <em>Zero to Hero</em>: micrograd → makemore → GPT"],
+    ["p9-micrograd", "Experiment", "<code>14-micrograd</code>"],
+    ["p9-three", "Experiment", "<code>15-triage-three-ways</code>: TF-IDF vs zero-shot LLM vs fine-tuned (Colab)"],
+    ["p9-lora", "Optional", "<code>16-lora-reply-style</code> → your own model in Ollama"],
+    ["p9-ship", "Ship", "Classifier-first triage with LLM fallback"],
+    ["p9-done", "Done when", "You can explain backprop and attention; tag v0.9"],
+  ]},
+  { n: 10, title: "Production, safety, team rollout & sharing", weeks: "Weeks 24–26", ver: "v1.0", anchor: "phase-10--production-safety-team-rollout--sharing-weeks-2426", tasks: [
+    ["p10-owasp", "Learn", "OWASP Top 10 for LLM Applications"],
+    ["p10-redact", "Ship", "Redaction layer + prompt-injection eval cases"],
+    ["p10-fallback", "Ship", "Provider fallback chain (Gemini → GitHub Models → Ollama)"],
+    ["p10-docker", "Ship", "Dockerfile + docker compose (app + Ollama)"],
+    ["p10-ci", "Ship", "GitHub Actions CI: tests + small eval suite, green"],
+    ["p10-deploy", "Ship", "Demo on Hugging Face Spaces, or a screencast"],
+    ["p10-rollout", "Do", "Team pilot: 2 teammates, 3 use cases, before/after timing"],
+    ["p10-release", "Done when", "Tag v1.0 and publish the final model comparison report"],
+  ]},
+];
+
+const LS_KEY = "kso-ai-roadmap-progress";
+let done = {};
+let remote = null;        // DocumentReference when saving to the account
+let writing = false, pendingWrite = false, writeTimer = null;
+const openState = {};     // phase n -> open (UI only)
+
+function loadLocal() { try { const v = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); return v && typeof v === "object" ? v : {}; } catch { return {}; } }
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(done)); } catch {} }
+
+function setStatus(mode, text) {
+  const el = document.getElementById("status");
+  el.dataset.mode = mode;
+  document.getElementById("status-text").textContent = text;
+}
+
+function phaseStats(p) { const d = p.tasks.filter(t => done[t[0]]).length; return { d, total: p.tasks.length }; }
+
+function render() {
+  const all = PHASES.flatMap(p => p.tasks);
+  const total = all.length, d = all.filter(t => done[t[0]]).length;
+  const pct = total ? Math.round((d / total) * 100) : 0;
+  const nowPhase = PHASES.find(p => phaseStats(p).d < p.tasks.length);
+  document.getElementById("s-pct").textContent = pct + "%";
+  document.getElementById("s-count").textContent = d + " / " + total;
+  document.getElementById("s-now").textContent = nowPhase ? "Phase " + nowPhase.n + " · " + nowPhase.ver : "All done · v1.0";
+  document.getElementById("s-bar").style.width = pct + "%";
+
+  const tl = document.getElementById("timeline");
+  tl.innerHTML = "";
+  for (const p of PHASES) {
+    const { d: pd, total: pt } = phaseStats(p);
+    const state = pd === pt ? "done" : (p === nowPhase ? "now" : "todo");
+    if (!(p.n in openState)) openState[p.n] = state === "now";
+    const li = document.createElement("li");
+    li.className = "phase"; li.dataset.state = state;
+    const stateLabel = state === "done" ? "done" : state === "now" ? "in progress" : "";
+    li.innerHTML = `
+      <span class="num" aria-hidden="true">${state === "done" ? "✓" : p.n}</span>
+      <details ${openState[p.n] ? "open" : ""}>
+        <summary>
+          <span class="ptitle">Phase ${p.n} · ${p.title}</span>
+          <span class="meta">
+            <span>${p.weeks}</span>
+            <span class="chip">${p.ver}</span>
+            ${stateLabel ? `<span class="chip state">${stateLabel}</span>` : ""}
+            <span class="count">${pd}/${pt}</span>
+          </span>
+          <span class="pmeter" aria-hidden="true"><i style="width:${Math.round(pd / pt * 100)}%"></i></span>
+        </summary>
+        <div class="body">
+          <ul class="tasks">
+            ${p.tasks.map(([id, tag, text]) => `
+              <li><label for="t-${id}">
+                <input type="checkbox" id="t-${id}" data-id="${id}" ${done[id] ? "checked" : ""}>
+                <span class="t"><span class="tag">${tag}</span>${text}</span>
+              </label></li>`).join("")}
+          </ul>
+          <a class="link" href="${ROADMAP}#${p.anchor}" target="_blank" rel="noopener">Read Phase ${p.n} in the roadmap →</a>
+        </div>
+      </details>`;
+    li.querySelector("details").addEventListener("toggle", e => { openState[p.n] = e.target.open; });
+    tl.appendChild(li);
+  }
+}
+
+document.getElementById("timeline").addEventListener("change", e => {
+  const id = e.target.dataset && e.target.dataset.id;
+  if (!id) return;
+  if (e.target.checked) done[id] = true; else delete done[id];
+  saveLocal();
+  render();
+  scheduleRemote();
+});
+
+function scheduleRemote() {
+  if (!remote) return;
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(flushRemote, 600);
+}
+async function flushRemote() {
+  if (!remote) return;
+  if (writing) { pendingWrite = true; return; }
+  writing = true;
+  try {
+    await remote.set({ done: { ...done }, updatedAt: new Date().toISOString() });
+    setStatus("account", "Saved to your account, so it follows you to any device.");
+  } catch (err) {
+    if (err && err.code === "unavailable") {
+      setTimeout(scheduleRemote, 1500 + Math.random() * 1500);
+    } else {
+      remote = null;
+      setStatus("local", "Saved in this browser only. Your account can't save progress on this page.");
+    }
+  } finally {
+    writing = false;
+    if (pendingWrite) { pendingWrite = false; scheduleRemote(); }
+  }
+}
+
+done = loadLocal();
+render();
+
+(async function connect() {
+  const fallback = () => setStatus("local", "Saved in this browser only. Sign in to claude.ai to keep progress across devices.");
+  if (!window.claude || typeof window.claude.use !== "function") { fallback(); return; }
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    const uid = user ? await user.id() : null;
+    if (!db || !uid) { fallback(); return; }
+    const ref = db.doc("data/users/" + uid + "/progress");
+    let first = true;
+    const timer = setTimeout(() => setStatus("local", "Saved in this browser. Your account isn't reachable yet."), 10000);
+    ref.onSnapshot(snap => {
+      if (!snap.metadata.fromCache) clearTimeout(timer);
+      remote = ref;
+      if (snap.exists) {
+        const body = snap.data() || {};
+        const server = body.done && typeof body.done === "object" ? body.done : {};
+        if (!snap.metadata.hasPendingWrites) { done = { ...server }; saveLocal(); render(); }
+        if (!snap.metadata.fromCache) setStatus("account", "Saved to your account, so it follows you to any device.");
+      } else if (first && !snap.metadata.fromCache) {
+        // First visit with an account: carry over anything ticked in this browser.
+        if (Object.keys(done).length) scheduleRemote();
+        setStatus("account", "Saved to your account, so it follows you to any device.");
+      }
+      if (!snap.metadata.fromCache) first = false;
+    }, () => { clearTimeout(timer); remote = null; fallback(); });
+  } catch { fallback(); }
+})();
+</script>

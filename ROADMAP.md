@@ -28,7 +28,7 @@ concepts, has you build small experiments, and then adds one more ability to
   [4](#phase-4--evaluation-proving-it-works-weeks-89) ·
   [5](#phase-5--rag-answering-from-your-docs-weeks-1012) ·
   [6](#phase-6--tools-agents-and-mcp-weeks-1315) ·
-  [7](#phase-7--ai-assisted-coding-mastery-weeks-1617) ·
+  [7](#phase-7--ai-assisted-coding-mastery-weeks-1617-and-all-along) ·
   [8](#phase-8--support-workflows--the-web-app-weeks-1820) ·
   [9](#phase-9--ml-fundamentals-weeks-2123) ·
   [10](#phase-10--production-safety-team-rollout--sharing-weeks-2426)

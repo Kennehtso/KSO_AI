@@ -6,7 +6,8 @@ working *with* AI tools along the way.
 
 📍 **Start here: [ROADMAP.md](ROADMAP.md)**, a 26-week learning path that grows
 one real system, the **KSO Support Copilot**. Every step can be followed for
-free.
+free. Track your progress with the [roadmap tracker](https://claude.ai/artifact/3bSBfn1ZkQgYMqPatsxSYa)
+(source in [`tracker/`](tracker/)).
 
 ## Layout
 
